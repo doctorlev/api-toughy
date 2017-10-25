@@ -1,5 +1,5 @@
 # api-toughy
-some microservices
+some microservices API, DB, docker
 
 The Project contains golang SW with the following components
 
