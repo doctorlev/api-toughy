@@ -1,0 +1,16 @@
+@startuml
+
+title "GET - check existing user"
+
+actor client
+boundary "httpAPI"
+database Redis
+
+client -> httpAPI : To check existing User(by Key) \n GET  $BASE/users {rec: key}
+httpAPI -> Redis : GET (key)
+note  over Redis: key(usr) found - "exists"\n not found - "not found"
+Redis -> httpAPI : Result code - \n"Rec found" or "not found"
+
+httpAPI-> client : {Status:<Result> }
+
+@enduml

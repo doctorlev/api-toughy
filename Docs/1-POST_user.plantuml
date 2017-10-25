@@ -1,0 +1,16 @@
+@startuml
+
+title "POST - new user creation"
+
+actor client
+boundary "httpAPI"
+database Redis
+
+client -> httpAPI : To create new User \n POST  $BASE/users {usr:name;pwd:123}
+httpAPI -> Redis : SET (usr, pwd)
+note right: usr created and\n tested (using GET)
+Redis -> httpAPI : "successful"
+note right: returned Result\n ("successful"  OR error)
+httpAPI-> client : {status:"successful"}
+
+@enduml

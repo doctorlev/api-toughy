@@ -1,0 +1,18 @@
+@startuml
+
+title "GET - authorize access by receiving token"
+
+actor client
+boundary "httpAPI"
+database Redis
+
+client -> httpAPI : Request access to /userinfo \n POST  $BASE/userinfo 'Authorization: Bearer <Token>'
+httpAPI -> Redis : GET "token:token"
+
+Redis -> httpAPI : "OK, found"
+note over httpAPI : not yet compare \nwith input "usr"
+note over httpAPI: access authorized\nreturn the SECRET
+
+httpAPI-> client : {Access:"granted"}
+
+@enduml

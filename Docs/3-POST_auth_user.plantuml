@@ -1,0 +1,20 @@
+@startuml
+
+title "POST - authenticate user and get token"
+
+actor client
+boundary "httpAPI"
+database Redis
+
+client -> httpAPI : To check existing User \n POST  $BASE/auth {usr:usr; pwd:pwd}
+httpAPI -> Redis : GET "user:usr"
+note  over Redis: "Usr exists"
+Redis -> httpAPI : "pwd"
+note over httpAPI : compare with input "pwd"
+note over httpAPI: generate Token
+httpAPI -> Redis: SET "s:<uuid>" "usr"
+note over Redis: created "<uuid>" "usr"
+Redis -> httpAPI : "OK"
+httpAPI-> client : {Token:<uuid>}
+
+@enduml

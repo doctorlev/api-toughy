@@ -1,0 +1,18 @@
+@startuml
+
+title "POST - authorize UPLOAD by receiving token"
+
+actor client
+boundary "storAPI"
+database Redis
+
+client -> storAPI : Request upload file \n POST  $BASE/storage 'Authorization: Bearer <Token>'\n upload <file>
+storAPI -> Redis : GET "token:token"
+Redis -> storAPI : "OK, found"
+note over storAPI: <file> upload to <dir>
+
+note over storAPI: <file> loading locally
+
+storAPI-> client : {file:"uploaded"}
+
+@enduml
