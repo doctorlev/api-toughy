@@ -4,16 +4,16 @@ curl -kv -H "Authorization: Bearer 3ee685b7-9466-4b19-83be-8727f1f44af1" -X GET 
 //for storage  ????
 curl -kv -H "Authorization: Bearer 14592f73-dcb9-40bb-a364-d92281ec29f6" -X POST http://127.0.0.1:8081/storage
 
-//file upload the file to user's (UUID) folder:
+// ***** Upload the file to user's (UUID) folder:
 curl -kv -H "Authorization: Bearer 14592f73-dcb9-40bb-a364-d92281ec29f6" -X POST http://127.0.0.1:8081/storage -F file=@test/upfile.txt
 
 //no verbose
 curl -H "Authorization: Bearer 14592f73-dcb9-40bb-a364-d92281ec29f6" -X POST http://127.0.0.1:8081/storage -F file=@test/upfile.txt
 
-// List files per current user (from Redis DB):
+// ***** List files per current user (from Redis DB):
 curl -H "Authorization: Bearer 14592f73-dcb9-40bb-a364-d92281ec29f6" -X GET http://127.0.0.1:8081/storage
 // Expecting:
 // {"files":["Filename1":"UUID1","Filename2":"UUID2",...]}
 
-// Download file that belongs to user(UUID):
+// ***** Download file that belongs to user(UUID):
 curl -H "Authorization: Bearer 14592f73-dcb9-40bb-a364-d92281ec29f6" -X GET http://127.0.0.1:8081/storage/{UUID1}

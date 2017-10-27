@@ -7,7 +7,7 @@ which provides http request analysis and response creation based on:
 - choosing accordingly the operation about the User with the DB (redis)
 the HTTPMANAGE imports local DATAMANGE(to work with Redis DB) and
 HTTPHELPER (to run TokenCheck)
-To run on container - use run.sh (and env.sh)
+To run on container - use run.sh (and env.sh) - maps ports 8080:8081
 
 2. **  STORAGEAPI (runs on container)  -
 the program main.go only imports local STORAGEMANAGE package,
@@ -16,7 +16,7 @@ which provides the functionality of :
 to/from DB
 - getting the combined information from DB.
 It imports local HTTPHELPER (to run TokenCheck).
-To run on container - use run.sh (and env.sh)
+To run on container - use run.sh (and env.sh)- maps ports 8080:8082
 
 3. Project packages:
 - DATAMANAGE (to work with Redis DB)
@@ -30,4 +30,7 @@ To run on container - use run.sh (and env.sh)
 contains:
 - scripts to run tests, including #5 - consolidated
 - examples of CURL command
-- ufile.txt file for uploading
+- upfile.txt file for uploading
+
+6. Docs
+contains PlantUML diagrams

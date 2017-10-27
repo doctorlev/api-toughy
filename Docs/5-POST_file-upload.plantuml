@@ -6,13 +6,19 @@ actor client
 boundary "storAPI"
 database Redis
 
-client -> storAPI : Request upload file \n POST  $BASE/storage 'Authorization: Bearer <Token>'\n upload <file>
-storAPI -> Redis : GET "token:token"
-Redis -> storAPI : "OK, found"
-note over storAPI: <file> upload to <dir>
+client -> storAPI : curl -kv -H "Authorization: Bearer {<b>User-UUID</b>}" -X <b>POST</b> http://127.0.0.1:8081/<b>storage</b> -F file=@<b>test/upfile.txt</b>
+note over storAPI: Retrieve Token
+storAPI -> Redis : EXISTS "token:token"
+Redis -> storAPI : "user exists"
+note over storAPI: form the file from  POST
+note over storAPI: check if target folder /tmp/{User-UUID} exists
+note over storAPI: check if {file name} exists
+storAPI -> Redis : EXISTS "user:filename"
+Redis -> storAPI : "user not found"
+note over storAPI: generate new file-UUID
 
-note over storAPI: <file> loading locally
-
+note over storAPI: loading file locally to /tmp/{User-UUID}/{file-UUID}
+storAPI -> Redis : PUT HSET {User-UUID: filename : file-UUID}
 storAPI-> client : {file:"uploaded"}
 
 @enduml
