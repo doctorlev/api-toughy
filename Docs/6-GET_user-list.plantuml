@@ -1,0 +1,18 @@
+@startuml
+
+title "GET - get list of all files uploaded by the user"
+
+actor client
+boundary "storAPI"
+database Redis
+
+client -> storAPI : curl -H "Authorization: Bearer {<b>User-UUID</b>}" -X <b>GET</b> http://127.0.0.1:8081/storage
+note over storAPI: Retrieve Token
+storAPI -> Redis : EXISTS "token:token"
+Redis -> storAPI : "user exists"
+
+storAPI -> Redis : GET HSET {User UUID: all files}
+Redis -> storAPI : "{["Filename1":"file-UUID1","Filename2":"file-UUID2",...]}"
+storAPI-> client : {"files":["Filename1":"file-UUID1","Filename2":"file-UUID2",...]}
+
+@enduml

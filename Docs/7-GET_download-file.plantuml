@@ -1,0 +1,19 @@
+@startuml
+
+title "GET - download a specific file of a user"
+
+actor client
+boundary "storAPI"
+database Redis
+
+client -> storAPI : curl -H "Authorization: Bearer {<b>User's UUID</b>}" -X <b>GET</b> http://127.0.0.1:8081/storage/{Filename}
+note over storAPI: Retrieve Token
+storAPI -> Redis : EXISTS "token:token"
+Redis -> storAPI : "user exists"
+
+storAPI -> Redis : GET "HSET User's UUID: Filename"
+Redis -> storAPI : "{Filename: File-UUID}"
+note over storAPI: locate the file (locally): /tmp/{User-UUID}/{file-UUID}
+storAPI-> client : Downloading:File-UUID
+
+@enduml
