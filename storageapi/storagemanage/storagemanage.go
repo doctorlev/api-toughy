@@ -4,10 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"net/http" //http
 	"os"
 
+	"lev/datamanage"
 	"lev/httphelper"
+
+	"github.com/google/uuid"
 	// "github.com/go-redis/redis"
 )
 
@@ -16,13 +21,16 @@ type HttpResponse struct {
 }
 
 const (
-	// DB_USER  = "user:"
+	DB_USER  = "user:"
 	DB_TOKEN = "token:"
 )
 
 func handlerUpload(rw http.ResponseWriter, req *http.Request) {
 	var (
-	// usr    datamanage.RecCheck
+		// usr datamanage.RecCheck
+		obj     datamanage.HRecCheck
+		fileRec datamanage.HRecord
+		// res1    string
 	// client *redis.Client
 	//resp   HttpResponse
 	)
@@ -42,28 +50,78 @@ func handlerUpload(rw http.ResponseWriter, req *http.Request) {
 
 		defer file.Close()
 
-		// create target file on the docker dir root/tmp/uploadfile/
-		out, err := os.Create("/tmp/uploadedfile")
+		// check if target folder /tmp/{User-UUID} exists
+		// and create it if doesn't exists
+		path := "/tmp/" + httphelper.ParseToken(req)
+		fmt.Println("path =  ", path) // debug: UUID folder exists
+		// if _, err1 := os.Stat(path); os.IsNotExist(err1) {
+		// 	os.Mkdir(path, 755)
+		_, err1 := os.Stat(path)
+		if os.IsNotExist(err1) {
+			os.Mkdir(path, 755)
+			fmt.Println("created new dir") // debug - folder not found ad created
+		} else {
+			fmt.Println("forder already exists")
+
+		}
+		// debug - list dir
+		files, err := ioutil.ReadDir("/tmp/")
 		if err != nil {
-			fmt.Fprintf(rw, "Unable to create the file for writing. Check your write access privilege")
-			return
+			log.Fatal(err)
 		}
 
-		defer out.Close()
-
-		// write the content from POST to the file
-		_, err = io.Copy(out, file)
-		if err != nil {
-			fmt.Fprintln(rw, err)
+		for _, f := range files {
+			fmt.Println("kuku", f.Name())
 		}
 
-		fmt.Fprintf(rw, "File uploaded successfully : \n")
-		fmt.Fprintf(rw, header.Filename)
-		fmt.Fprintf(rw, "\n")
+		//check if the file is already loaded - its fileName will appear in HGET
+		// for User
+		client := datamanage.InitRedis()
+		fmt.Println(header.Filename)             //debug
+		obj.KeyName = httphelper.ParseToken(req) // to ask DB
+		obj.FieldName = header.Filename          // to ask DB
+		fmt.Printf("HRecCheck: [%#v]\n", obj)
+		res := datamanage.HExistsRedis(client, obj)
+		fmt.Printf("res: [%s]\n", res)
 
-		//**************
+		if res == "key-field not found" {
 
-		json.NewEncoder(rw).Encode(HttpResponse{Status: "file loaded"})
+			//generate file:UUID, load file and
+			uuidStr := uuid.New().String()
+			fileRec.KeyName = httphelper.ParseToken(req)
+			fileRec.FieldName = header.Filename
+			fileRec.ValueName = uuidStr
+
+			// create target file on the docker dir root/tmp/file-UUID
+			out, err := os.Create(path + "/" + uuidStr)
+			if err != nil {
+				fmt.Fprintf(rw, "Unable to create the file for writing. Check your write access privilege")
+				return
+			}
+
+			defer out.Close()
+
+			// create a record HSET in redis
+			res1 := datamanage.HSetRedis(client, fileRec)
+
+			if res1 == "HSET done" {
+				// write the content from POST to the file
+				_, err = io.Copy(out, file)
+				if err != nil {
+					fmt.Fprintln(rw, err)
+				}
+
+				fmt.Fprintf(rw, "File uploaded successfully : \n")
+				fmt.Fprintf(rw, header.Filename)
+				fmt.Fprintf(rw, "\n")
+
+				json.NewEncoder(rw).Encode(HttpResponse{Status: "file loaded"})
+			}
+		}
+
+		if res == "key-field exists" {
+			json.NewEncoder(rw).Encode(HttpResponse{Status: "file already loaded"})
+		}
 	} else {
 		json.NewEncoder(rw).Encode(HttpResponse{Status: "authorization failed"})
 	}

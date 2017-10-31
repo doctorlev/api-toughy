@@ -4,7 +4,7 @@ curl -kv -H "Authorization: Bearer 3ee685b7-9466-4b19-83be-8727f1f44af1" -X GET 
 //for storage  ????
 curl -kv -H "Authorization: Bearer 14592f73-dcb9-40bb-a364-d92281ec29f6" -X POST http://127.0.0.1:8081/storage
 
-// ***** Upload the file to user's (UUID) folder:
+// ***** Upload the file to user's (UUID) folder *** run this command rom the folder above /test/  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 curl -kv -H "Authorization: Bearer 14592f73-dcb9-40bb-a364-d92281ec29f6" -X POST http://127.0.0.1:8081/storage -F file=@test/upfile.txt
 
 //no verbose

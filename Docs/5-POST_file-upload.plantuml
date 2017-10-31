@@ -6,19 +6,32 @@ actor client
 boundary "storAPI"
 database Redis
 
-client -> storAPI : curl -kv -H "Authorization: Bearer {<b>User-UUID</b>}" -X <b>POST</b> http://127.0.0.1:8081/<b>storage</b> -F file=@<b>test/upfile.txt</b>
+client -> storAPI : curl -kv -H "Authorization: Bearer {<b>User-UUID</b>}" -X <b>POST</b> http://127.0.0.1:8081/<b>storage</b> -F <b><i><color:royalBlue>file</color></i></b>=@<b>test/upfile.txt</b>
 note over storAPI: Retrieve Token
-storAPI -> Redis : EXISTS "token:token"
+storAPI -> Redis : EXISTS "token:{UUID}"
+note right: "token:{UUID} - {userName}"
+== Token note found ==
+Redis -> storAPI : "user not found"
+storAPI -> client : {Status: "authorization failed"}
+== Token note found ==
+
 Redis -> storAPI : "user exists"
-note over storAPI: form the file from  POST
-note over storAPI: check if target folder /tmp/{User-UUID} exists
-note over storAPI: check if {file name} exists
+note over storAPI: form the <b><i><color:royalBlue>file</color></i></b> from  POST
+note over storAPI: check if target folder <b>/tmp/{User-UUID}</b> exists.\n(if not - mkdir and go to "generate new file-UUID")
+note over storAPI: check if the file already loaded-\n{file name} exists in DB
 storAPI -> Redis : EXISTS "user:filename"
+== File exists ==
+Redis -> storAPI : "user exists"
+storAPI-> client : {Status: "file already loaded"}
+== File exists ==
 Redis -> storAPI : "user not found"
 note over storAPI: generate new file-UUID
 
-note over storAPI: loading file locally to /tmp/{User-UUID}/{file-UUID}
-storAPI -> Redis : PUT HSET {User-UUID: filename : file-UUID}
-storAPI-> client : {file:"uploaded"}
+note over storAPI: loading file locally to <b>/tmp/{User-UUID}/{file-UUID}</b>
+note over storAPI: create a new file HSET record for the user:
+storAPI -> Redis : HSET {User-UUID: filename : file-UUID}
+storAPI-> client : {status: "file loaded"}
+
+
 
 @enduml

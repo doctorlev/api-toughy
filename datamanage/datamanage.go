@@ -16,7 +16,19 @@ type RecCheck struct {
 	KeyName string
 }
 
-// initialize new redis client function as a ponter to "redis.Client" method of redis lib
+type HRecCheck struct {
+	KeyName   string
+	FieldName string
+}
+
+type HRecord struct {
+	KeyName   string
+	FieldName string
+	ValueName string
+}
+
+// InitRedis is a fuction to initialize new redis client
+// as a ponter to "redis.Client" method of redis lib
 func InitRedis() *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "172.17.0.1:6379", // IP of docker
@@ -59,7 +71,19 @@ func WriteRedis(client *redis.Client, jsonpair AuthRequest) (res string) {
 	return res
 }
 
-// function to return the VAL by the KEY from redis
+// HSetRedis is function to HSET to REDIS (the triple key-field-value
+// which values are withdrawn from HTTP Req (obj)
+func HSetRedis(client *redis.Client, filerec HRecord) (res string) {
+	fmt.Println("HSET to redis")
+
+	err := client.HSet(filerec.KeyName, filerec.FieldName, filerec.ValueName).Err()
+	if err != nil {
+		panic(err)
+	}
+	return "HSET done"
+}
+
+// ReadRedis is a function to return the VAL by the KEY from redis
 func ReadRedis(client *redis.Client, jsonval RecCheck) string {
 	fmt.Println("ReadRedis: ", jsonval.KeyName) //debug
 
@@ -88,4 +112,21 @@ func ExistsRedis(client *redis.Client, jsonval RecCheck) string {
 		result = "user not found"
 	}
 	return result
+}
+
+// HExistsRedis is a function to validate the existance of the HKEY in redis
+func HExistsRedis(client *redis.Client, hashval HRecCheck) string {
+	fmt.Println("HExistsRedis: ", hashval.KeyName, hashval.FieldName) //debug
+	var hresult string
+	hval, err := client.HExists(hashval.KeyName, hashval.FieldName).Result()
+	if err != nil {
+		fmt.Println("Failed")
+	}
+	if hval == true {
+		hresult = "key-field exists"
+	}
+	if hval == false {
+		hresult = "key-field not found"
+	}
+	return hresult
 }
